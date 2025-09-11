@@ -1,72 +1,69 @@
-<!doctype html>
-<html lang="en">
- <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <link rel="stylesheet" type="text/css" href="js.css">
-  <style>
-        body {
-            margin: 0;
-            background-color: #121212; /* Dark background */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        #player-container {
-            width: 99%;
-            height: 99%;
-            background: #1e1e1e; /* Dark gray background */
-        }
-        #player {
-            width: 100%;
-            height: 100%;
-            margin: 1px;
-        }
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-        
-    </style>
-  <!-- Clappr and Plugins -->
-  <script src="https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/level-selector@0.2.0/dist/level-selector.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@clappr/hlsjs-playback@1.0.1/dist/hlsjs-playback.min.js"></script>
- </head>
- <body>
-  <div id="player-container">
-   <div id="player"></div>
-  </div>
-  <script>
-const urlParams = new URLSearchParams(window.location.search);
-    const srcParam = urlParams.get("url");
-   
-        function loadPlayer() {
-            var player = new Clappr.Player({ 
-                source:"https://xfireflix.fun/opflix/stream.php?id=167567&e=.m3u8", // PHP-generated URL
-                width: '100%',
-                height: '100%',
-                autoPlay: true,
-                plugins: [HlsjsPlayback, LevelSelector],
-                mimeType: "application/x-mpegURL",
-                mediacontrol: { seekbar: "#ff8800", buttons: "#ff8800" }, /* Orange seekbar & buttons */
-                parentId: "#player"
-            });
 
-            // Handle player errors and reload the stream
-            player.on(Clappr.Events.PLAYER_ERROR, function(error) {
-                console.log('Player error occurred:', error);
 
-                // Destroy player and reload after a short delay
-                setTimeout(function() {
-                    console.log("Retrying stream...");
-                    document.getElementById("player").innerHTML = ""; // Clear existing player
-                    loadPlayer(); // Re-initialize the player (restarting it)
-                }, 30); // Retry after 3 seconds
-            });
-        }
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css">
 
-        loadPlayer(); // Initialize the player on page load
-    </script>
-  
- </body>
-</html>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+
+<style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-container {
+      position: relative;
+      width: 110%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    video {
+      width: 110%;
+      max-height: 100%;
+      object-fit: contain; /* keeps correct aspect ratio */
+      background: #000;
+    }
+  </style>
+<div class="video-container">
+<video autoplay="yes" oncanplay="this.muted=true"  id="player" controls preload="metadata" poster="https://blogger.googleusercontent.com/img/a/AVvXsEiGqaZeRBZ6Y7yV5ZYSRiNRhBa5q9_EMx7R5TJcHd3XJwwHh2YhNOGt76Y4vEcUIjvIaA7W-Tw1RyMLP-4WZwVHA4mk18zwXl7HdSL5WabprIasDOWJO7jpL0zTQB4p_y7X0Rv0xwe-cJ-GvxofAgeRp2FIiNgB90n_b8Cqw0sAaZqVhJg_fi9UyfSO8KY" id="player" controls></video></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const video = document.getElementById("player");
+      const source = "https://media.onestream.studio/content/hls/live/live_4139402_6zjrbyf6x/hls.m3u8";
+
+      if (Hls.isSupported()) {
+        const hls = new Hls({
+          xhrSetup: function (xhr) {
+            xhr.setRequestHeader("Ortmp", "south-asia-mumbai-1");
+            xhr.setRequestHeader("X-Origin-Host", "south-asia-mumbai-1");
+            xhr.setRequestHeader("vKey", "live_4139402_ss0if8fm7?auth=p_auth_4139402_754stsirp");
+            xhr.setRequestHeader("Referer", "https://app.onestream.live/multicast");
+            xhr.setRequestHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36");
+          }
+        });
+        hls.loadSource(source);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = source;
+        video.addEventListener("loadedmetadata", () => video.play());
+      }
+
+      new Plyr(video);
+    });
+</script>
