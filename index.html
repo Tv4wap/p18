@@ -1,69 +1,203 @@
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<!DOCTYPE html>
+<html>
 
+<head>
+    <title>mpd Checker</title></title>
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/2048px-Telegram_logo.svg.png" type="image/png" sizes="250x250">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.1.1/shaka-player.ui.min.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.1.1/controls.min.css" crossorigin="anonymous">
 
+    <style>
+        /* Overflow menu style */
+        .shaka-overflow-menu {
+            background-color: rgb(41, 41, 163);
+            color: rgb(153, 153, 153);
+        }
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css">
+        .shaka-overflow-menu button:hover {
+            background-color: rgb(45, 45, 45);
+        }
 
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+        .shaka-overflow-button-label {
+            color: rgb(245, 245, 245);
+        }
 
-<script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+        .shaka-current-selection-span {
+            color: rgb(202, 202, 202);
+        }
 
-<style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+        .material-icons-round {
+            color: rgb(230, 230, 230);
+        }
 
-    .video-container {
-      position: relative;
-      width: 110%;
-      height: 100%;
-      background: #000;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+        /* Overflow sub menu style */
+        .shaka-settings-menu {
+            background-color: rgb(35, 35, 35);
+            color: rgb(255, 255, 255);
+        }
 
-    video {
-      width: 110%;
-      max-height: 100%;
-      object-fit: contain; /* keeps correct aspect ratio */
-      background: #000;
-    }
-  </style>
-<div class="video-container">
-<video autoplay="yes" oncanplay="this.muted=true"  id="player" controls preload="metadata" poster="https://blogger.googleusercontent.com/img/a/AVvXsEiGqaZeRBZ6Y7yV5ZYSRiNRhBa5q9_EMx7R5TJcHd3XJwwHh2YhNOGt76Y4vEcUIjvIaA7W-Tw1RyMLP-4WZwVHA4mk18zwXl7HdSL5WabprIasDOWJO7jpL0zTQB4p_y7X0Rv0xwe-cJ-GvxofAgeRp2FIiNgB90n_b8Cqw0sAaZqVhJg_fi9UyfSO8KY" id="player" controls></video></div>
+        .shaka-settings-menu button {
+            color: rgb(255, 255, 255);
+        }
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const video = document.getElementById("player");
-      const source = "https://media.onestream.studio/content/hls/live/live_4139402_6zjrbyf6x/hls.m3u8";
+        .shaka-settings-menu button:hover {
+            background-color: rgb(45, 45, 45);
+        }
 
-      if (Hls.isSupported()) {
-        const hls = new Hls({
-          xhrSetup: function (xhr) {
-            xhr.setRequestHeader("Ortmp", "south-asia-mumbai-1");
-            xhr.setRequestHeader("X-Origin-Host", "south-asia-mumbai-1");
-            xhr.setRequestHeader("vKey", "live_4139402_ss0if8fm7?auth=p_auth_4139402_754stsirp");
-            xhr.setRequestHeader("Referer", "https://app.onestream.live/multicast");
-            xhr.setRequestHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36");
-          }
+        /* Custom controls container */
+        #customControls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        #customControls input {
+            margin: 5px 0;
+            padding: 5px;
+            width: 300px;
+        }
+
+        #customControls button {
+            padding: 5px 10px;
+            margin-top: 5px;
+        }
+
+        #customControls h3 {
+            margin: 0 0 10px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+
+<body bgcolor="black" style="margin:0">
+    <!-- Custom Controls Overlay: MPD Checker -->
+    <div id="customControls">
+        <h3>MPD Checker</h3>
+        <div>
+            <input id="mpdInput" type="text" placeholder="Enter .mpd URL" />
+        </div>
+        <div>
+            <input id="key1" type="text" placeholder="Enter key1 (optional)" />
+        </div>
+        <div>
+            <input id="key2" type="text" placeholder="Enter key2 (optional)" />
+        </div>
+        <div>
+            <button id="playButton">Play</button>
+        </div>
+    </div>
+
+    <center>
+        <div data-shaka-player-container style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover">
+            <video autoplay muted playsinline data-shaka-player id="video"
+                   poster="https://www.disneystar.com/media/2231/7e25132017-009.jpg?width=1920&height=1080&mode=max&slimmage=true"
+                   style="width:100%;height:100%"></video>
+        </div>
+    </center>
+
+    <script>
+        async function init() {
+            let videoElement = document.getElementById("video"),
+                ui = videoElement.ui,
+                controls = ui.getControls(),
+                player = controls.getPlayer();
+
+            // Player configuration remains the same except for attached MPD and DRM keys.
+            player.configure({
+                // Removed default DRM clearKeys to let the checker fetch/detect them.
+                streaming: {
+                    startAtSegmentBoundary: true,
+                    ignoreTextStreamFailures: true,
+                    rebufferingGoal: 1,
+                    bufferingGoal: 3,
+                    bufferBehind: 5,
+                    autoLowLatencyMode: true,
+                    lowLatencyMode: true,
+                    jumpLargeGaps: true,
+                    inaccurateManifestTolerance: 0.3,
+                    stallEnabled: false
+                },
+                manifest: {
+                    dash: {
+                        ignoreMinBufferTime: true,
+                        autoCorrectDrift: true
+                    }
+                }
+            });
+
+            // UI configurations remain unchanged.
+            ui.configure({
+                controlPanelElements: ["play_pause", "mute", "volume", "spacer", "time_and_duration", "quality", "fullscreen", "overflow_menu"],
+                volumeBarColors: { base: 'rgba(63, 187, 1, 1)', level: 'rgb(255, 69, 0)' },
+                seekBarColors: { base: 'rgb(41, 41, 163)', buffered: 'rgb(35, 99, 3)', played: 'rgba(63, 187, 1, 1)' }
+            });
+
+            window.player = player;
+            window.ui = ui;
+
+            player.addEventListener("error", onPlayerErrorEvent);
+            controls.addEventListener("error", onUIErrorEvent);
+
+            // No default MPD is loaded.
+            console.log("Player is initialized. Awaiting MPD URL and keys...");
+        }
+
+        function onPlayerErrorEvent(e) {
+            onPlayerError(e.detail);
+        }
+
+        function onPlayerError(e) {
+            console.error("Error code", e.code, "object", e);
+        }
+
+        function onUIErrorEvent(e) {
+            onPlayerError(e.detail);
+        }
+
+        function initFailed(e) {
+            console.error("Unable to load the UI library!");
+        }
+
+        document.addEventListener("shaka-ui-loaded", init);
+        document.addEventListener("shaka-ui-load-failed", initFailed);
+
+        // New functionality: MPD Checker
+        document.getElementById("playButton").addEventListener("click", async function () {
+            let mpdURL = document.getElementById("mpdInput").value.trim();
+            let key1 = document.getElementById("key1").value.trim();
+            let key2 = document.getElementById("key2").value.trim();
+
+            // Check if the mpd URL is valid (basic check for ".mpd")
+            if (!mpdURL || mpdURL.indexOf(".mpd") === -1) {
+                alert("Please enter a valid .mpd URL.");
+                return;
+            }
+
+            // If both keys are provided, update DRM clearKeys. Otherwise, leave DRM config as-is.
+            if (key1 && key2) {
+                let newKeys = {};
+                newKeys[key1] = key2;
+                player.configure({ drm: { clearKeys: newKeys } });
+            }
+
+            // Load the provided MPD URL into the player.
+            try {
+                await player.load(mpdURL);
+                console.log("Playback started with the provided MPD and keys (if any)!");
+            } catch (err) {
+                console.error("Error loading new stream:", err);
+                alert("Error loading the provided MPD stream. Check the console for details.");
+            }
         });
-        hls.loadSource(source);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
-      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        video.src = source;
-        video.addEventListener("loadedmetadata", () => video.play());
-      }
+    </script>
+</body>
 
-      new Plyr(video);
-    });
-</script>
+    </html>
+
+
